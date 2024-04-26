@@ -2,34 +2,12 @@
 import { get } from "http";
 import React from "react";
 import { useState } from "react";
+import { Endereco } from "../types/Endereco";
 
 const CepForm = () => {
 
-    type Endereco = {
-        "cep": string,
-        "logradouro": string,
-        "complemento": string,
-        "bairro": string,
-        "localidade": string,
-        "uf": string,
-        "ibge": string,
-        "gia": string,
-        "ddd": string,
-        "siafi": string
-    }
-
-    const [endereco, setEndereco] = useState<Endereco>({
-        "cep": "",
-        "logradouro": "",
-        "complemento": "",
-        "bairro": "",
-        "localidade": "",
-        "uf": "",
-        "ibge": "",
-        "gia": "",
-        "ddd": "",
-        "siafi": ""
-    })
+    const [endereco, setEndereco] = useState<Endereco>({})
+    const [notFound, setNotFound] = useState<boolean>(false)
 
     const handleCep = async (e: any) => {
         const cep = e.target.value
@@ -38,30 +16,32 @@ const CepForm = () => {
             method: "GET",
         }).then(response => {
             return response.json()
-        }).catch(e =>{
+        }).then(json => {
+            if (json.erro == true) {
+                setNotFound(true)
+            } else {
+                setNotFound(false)
+                return json
+            }
+        }).catch(e => {
             console.error(e)
         })
 
         setEndereco(endereco)
     }
 
-    const handleChange = (e : any) => {
-        setEndereco({...endereco , [e.target.name]: e.target.value})
-    }
-
-    const handleAutoCompleteError = () => {
-
+    const handleChange = (e: any) => {
+        setEndereco({ ...endereco, [e.target.name]: e.target.value })
     }
 
     return (
         <>
             <form>
-                <span className="error"></span>
-
                 <div className="inputBox">
                     <label htmlFor="cep">Cep:</label><br />
                     <input onBlur={handleCep} onChange={handleChange} minLength={8} type="text" name="cep" id="cep" /><br />
                 </div>
+                <span style={{color: "#e00404"}} id="notFoundField">{notFound == true ? "Endereço não encontrado, verifique o cep" : ""}</span>
 
                 <div className="inputBox">
                     <label htmlFor="logradouro">Logradouro:</label><br />
